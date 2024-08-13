@@ -1,0 +1,940 @@
+openapi: 3.0.0
+info:
+  version: '01'
+  title: Isabella
+  description: ''
+servers:
+  - url: https://admin.sentab.com
+  - url: https://pharaon-dev-idp.eng.it
+  - url: https://dev.senseeact.com
+  - url: https://api-pharaon.miwenergia.com
+  - url: https://api.retepaiot.it
+  - url: http://localhost:8080
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/LCESARIO/isabella/01
+tags:
+  - name: Isabella
+    description: 'API del sistema isabella'
+  - name: Sentab
+    description: >-
+      [https://account.sentab.com/api/#/?filter=pharaon](https://account.sentab.com/api/#/?filter=pharaon)
+  - name: PACO
+  - name: RRD
+    description: Con la LOGIN ottengo il token che poi posso usare per le altre API
+  - name: UGRID
+  - name: UGRID > Nostri dispositivi
+  - name: RetePaIoT
+  - name: Keycloak
+  - name: Performance testing
+  - name: Performance testing > VALUES
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+    OpenID:
+      type: openIdConnect
+      openIdConnectUrl: https://linkalpharaon.hub
+  schemas:
+    Apartment:
+      type: object
+      properties:
+        id: 
+          type: string
+        apartmentId: 
+          type: string
+        name:
+          type: string
+        locationName: 
+          type: string
+        locationCity:
+          type: string
+        sumOfPresence: 
+          type: number
+        semaphore24h: 
+          type: string
+        nightMovement:
+          type: number
+        rooms: 
+          type: array
+          items:
+            $ref: '#/components/schemas/Room'
+      required:
+        - id
+        - apartmentId
+        - name
+        - locationName
+        - locationCity
+        - sumOfPresence
+        - semaphore24h
+    Room:
+      type: object
+      properties:
+        roomName:
+          type: string
+        roomSlug:
+          type: string
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/Report'
+    Report:
+      type: object
+      properties:
+        maxReadVal:
+          type: number
+        minReadVal:
+          type: number
+        sumReadVal:
+          type: number
+        measureType:
+          type: string
+        measurement:
+          type: string
+        localSemaphore24h:
+          type: string
+          enum: [ 'success', 'warning', 'danger', 'unknown']
+        lastTodayValues:
+          type: object
+          properties:
+            readVal: 
+              type: number
+            timestamp:
+              type: string
+        yesterday:
+          $ref: '#/components/schemas/DayTime'
+        today:
+          $ref: '#/components/schemas/DayTime'
+      required:
+        - maxReadVal
+        - minReadVal
+        - sumReadVal
+        - measureType
+        - measurement
+        - localSemaphore24h
+        - yesterday
+        - today
+    DayTime:
+      type: object
+      properties:
+        night:
+          $ref: '#/components/schemas/ReportValueObject'
+        morning:
+          $ref: '#/components/schemas/ReportValueObject'
+        evening:
+          $ref: '#/components/schemas/ReportValueObject'
+        afternoon:
+          $ref: '#/components/schemas/ReportValueObject'
+      required:
+        - night
+        - morning
+        - evening
+        - afternoon
+    ReportValueObject:
+      type: object
+      properties:
+        mean:
+          type: number
+        sum: 
+          type: number
+        semaphore:
+          type: number
+      required:
+        - mean
+        - sum
+        - semaphore
+    GraphValue:
+      type: object
+      properties:
+        measureType:
+          type: string
+          enum: [ 'temperature', 'humidity', 'presence', 'brightness', 'battery', 'co2', 'noise', 'energy', 'contact', 'other', 'ugridEnergyConsumption',  'sentabSudoku', 'sentabWords','sentabPictures', 'senseeact_kcal', 'senseeact_carbs', 'senseeact_food', 'senseeact_grams', 'senseeact_steps', 'senseeact_sleep_deep', 'senseeact_sleep_light', 'senseeact_sleep_rem','senseeact_sleep_wake']
+        timestamps:
+          type: string
+        value:
+          type: array
+          items:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: number
+              label:
+                type: string
+        threasholds:
+          type: object
+          properties:
+            successMin:
+              type: number
+            successMax:
+              type: number
+            warningMin:
+              type: number
+            warningMax: 
+              type: number
+    Sensor:
+      type: object
+      properties:
+        name:
+          type: string
+        brand: 
+          type: string
+        origin:
+          type: string
+        physicalId: 
+          type: string
+        measurements:
+          type: array
+          items:
+            $ref: '#/components/schemas/SensorMeasurements'
+      required:
+       - physicalId
+       - measurements
+    SensorMeasurements:
+      type: object
+      properties:
+        name:
+          type: string
+        measureType:
+          type: string
+          enum: [ 'temperature', 'humidity', 'presence', 'brightness', 'battery', 'co2', 'noise', 'energy', 'contact', 'other', 'ugridEnergyConsumption',  'sentabSudoku', 'sentabWords','sentabPictures', 'senseeact_kcal', 'senseeact_carbs', 'senseeact_food', 'senseeact_grams', 'senseeact_steps', 'senseeact_sleep_deep', 'senseeact_sleep_light', 'senseeact_sleep_rem','senseeact_sleep_wake']
+        measureId:
+          type: string
+        unitOfMeasure:
+          type: string
+          enum: [ '°C', '%', 'num', 'cd','lux', 'ppm','','dB', 'mV','other']
+      required:
+        - measureType
+        - measureId
+    Note:
+      type: object
+      properties:
+        userRef: 
+          type: string
+        apartmentRef:
+          type: string
+        text:
+          type: string
+        timestamp:
+          type: string
+      required:
+        - userRef
+        - apartmentRef
+        - text
+        - timestamp
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+        userId:
+          type: string
+          description: User Id in authentication system (Firebase/Keycloak)
+        email:
+          type: string
+        city:
+          type: string
+        role:
+          type: string
+          enum: [ 'admin', 'manager', 'users']
+        apartmentList:
+          type: array
+          items:
+            $ref: '#/components/schemas/Apartment'
+      required:
+        - _id
+        - userId
+        - email
+        - role
+        - apartmentList
+    Error:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: number
+        message:
+          type: string
+      required:
+        - name
+        - status
+        - message
+    
+    
+        
+paths:
+
+  /publicrest/pharaon/steps:
+    get:
+      tags:
+        - Sentab
+      summary: Activity
+      parameters:
+        - name: start
+          in: query
+          schema:
+            type: string
+          example: '{{SENTAB-STARTDATE}}'
+        - name: end
+          in: query
+          schema:
+            type: string
+          example: '{{SENTAB-ENDDATE}}'
+        - name: group
+          in: query
+          schema:
+            type: string
+          example: '{{SENTAB-GROUP}}'
+        - name: key
+          in: query
+          schema:
+            type: string
+          example: '{{SENTAB-KEY}}'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /publicrest/pharaon/game:
+    get:
+      tags:
+        - Sentab
+      summary: New Request Copy
+      parameters:
+        - name: group
+          in: query
+          schema:
+            type: string
+          example: PharaON_other
+        - name: key
+          in: query
+          schema:
+            type: string
+          example: AHTuuLzvI70qjFqZ8dQd2xEm75sga3QE
+        - name: game
+          in: query
+          schema:
+            type: string
+          example: GAME_PICTURES
+        - name: start
+          in: query
+          schema:
+            type: string
+          example: '2024-06-20'
+        - name: end
+          in: query
+          schema:
+            type: string
+          example: '2024-06-21'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /publicrest/pharaon/statistics:
+    get:
+      tags:
+        - Sentab
+      summary: Weekly responses - health activity
+      parameters:
+        - name: group
+          in: query
+          schema:
+            type: string
+          example: '{{SENTAB-GROUP}}'
+        - name: key
+          in: query
+          schema:
+            type: string
+          example: '{{SENTAB-KEY}}'
+        - name: category
+          in: query
+          schema:
+            type: string
+          example: HEALTH
+        - name: action
+          in: query
+          schema:
+            type: string
+          example: ACTIVITY
+        - name: start
+          in: query
+          schema:
+            type: string
+          example: '{{SENTAB-STARTDATE}}'
+        - name: end
+          in: query
+          schema:
+            type: string
+          example: '{{SENTAB-ENDDATE}}'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /auth/realms/isabella/protocol/openid-connect/token:
+    post:
+      tags:
+        - Keycloak
+      summary: GET_TOKEN
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                grant_type:
+                  type: string
+                  example: '{{KEYCLOAK_GRANT_TYPE}}'
+                client_id:
+                  type: string
+                  example: '{{KEYCLOAK_CLIENT_ID}}'
+                client_secret:
+                  type: string
+                  example: '{{KEYCLOAK_CLIENT_SECRET}}'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /servlets/pharaon-oc2/isabella/senseeact/v6.0.8/project/default/table/fitbit_activities_steps:
+    get:
+      tags:
+        - RRD
+      summary: sampe Dennis 1
+      parameters:
+        - name: X-PharaonHub-Auth-Token
+          in: header
+          schema:
+            type: string
+          example: '{{SENSEE-ACT-AUTH}}'
+        - name: X-PharaonHub-Auth-UserId
+          in: header
+          schema:
+            type: string
+          example: eb8408e2-7c77-4457-9f1a-343b2a5424b0
+        - name: start
+          in: query
+          schema:
+            type: string
+          example: '2024-04-15'
+        - name: end
+          in: query
+          schema:
+            type: string
+          example: '2024-04-16'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /servlets/pharaon-oc2/isabella/senseeact/v6.0.8/project/list:
+    get:
+      tags:
+        - RRD
+      summary: Project list
+      parameters:
+        - name: X-PharaonHub-Auth-Token
+          in: header
+          schema:
+            type: string
+          example: '{{SENSEE-ACT-AUTH}}'
+        - name: X-PharaonHub-Auth-UserId
+          in: header
+          schema:
+            type: string
+          example: eb8408e2-7c77-4457-9f1a-343b2a5424b0
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /servlets/pharaon-oc2/isabella/senseeact/v6.0.8/project/default/tables:
+    get:
+      tags:
+        - RRD
+      summary: Tabels list on default
+      parameters:
+        - name: X-PharaonHub-Auth-Token
+          in: header
+          schema:
+            type: string
+          example: '{{SENSEE-ACT-AUTH}}'
+        - name: X-PharaonHub-Auth-UserId
+          in: header
+          schema:
+            type: string
+          example: eb8408e2-7c77-4457-9f1a-343b2a5424b0
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /servlets/pharaon-oc2/isabella/senseeact/v6.0.8/project/default/users:
+    get:
+      tags:
+        - RRD
+      summary: Users list on default
+      parameters:
+        - name: X-PharaonHub-Auth-Token
+          in: header
+          schema:
+            type: string
+          example: '{{SENSEE-ACT-AUTH}}'
+        - name: X-PharaonHub-Auth-UserId
+          in: header
+          schema:
+            type: string
+          example: eb8408e2-7c77-4457-9f1a-343b2a5424b0
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /data:
+    get:
+      tags:
+        - UGRID
+      summary: Sent from ANTONIO
+      parameters:
+        - name: fromDate
+          in: query
+          schema:
+            type: string
+          example: 23/04/2024
+        - name: toDate
+          in: query
+          schema:
+            type: string
+          example: 24/04/2024
+        - name: deviceCode
+          in: query
+          schema:
+            type: string
+          example: E4C986
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /alerts/user/{UGRID-userid}:
+    get:
+      tags:
+        - UGRID
+      summary: Alert by user
+      parameters:
+        - name: UGRID-userid
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /alerts/device/{UGRID-deviceid}:
+    get:
+      tags:
+        - UGRID
+      summary: Alert by device
+      parameters:
+        - name: UGRID-deviceid
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /brands:
+    get:
+      tags:
+        - UGRID
+      summary: Brands - list
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /data/resume/{UGRID-userid}:
+    get:
+      tags:
+        - UGRID
+      summary: Data summary for a user
+      parameters:
+        - name: fromDate
+          in: query
+          schema:
+            type: string
+          example: 01/01/2024
+        - name: toDate
+          in: query
+          schema:
+            type: string
+          example: 01/03/2024
+        - name: UGRID-userid
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /devices:
+    get:
+      tags:
+        - UGRID
+      summary: Devices - list
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /devices/types:
+    get:
+      tags:
+        - UGRID
+      summary: Devices - list of types
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /devices/{UGRID-deviceid}:
+    get:
+      tags:
+        - UGRID
+      summary: Devices - get device info by ID
+      parameters:
+        - name: UGRID-deviceid
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /code/F8D1B9:
+    get:
+      tags:
+        - UGRID
+      summary: Devices - get device info by device identifier code
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /projects:
+    get:
+      tags:
+        - UGRID
+      summary: Project (credo siano i corrispettivi dei nostri apt) - list
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /projects/1:
+    get:
+      tags:
+        - UGRID
+      summary: Project (credo siano i corrispettivi dei nostri apt) - by id
+      parameters:
+        - name: id
+          in: query
+          schema:
+            type: string
+          example: '{{UGRID-projectId}}'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users:
+    get:
+      tags:
+        - UGRID
+      summary: Users - list
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/{UGRID-userid}:
+    get:
+      tags:
+        - UGRID
+      summary: Users - by id
+      parameters:
+        - name: UGRID-userid
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /patient/{UGRID-patientcode}:
+    get:
+      tags:
+        - UGRID
+      summary: Users - by id Copy
+      parameters:
+        - name: UGRID-patientcode
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /getMeasureRealTimeData/{sensorId}/{date}:
+    get:
+      tags:
+        - RetePaIoT
+      summary: Get measurement value with data Copy
+      parameters:
+        - name: sensorId
+          in: path
+          schema:
+            type: string
+          required: true
+          example: '3102'
+          
+        - name: date
+          in: path
+          schema:
+            type: string
+          required: true
+          example: '2023-07-19'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /getMeasureData/{sensorId}:
+    get:
+      tags:
+        - RetePaIoT
+      summary: Sostituta getMisuraIdCentralina Copy
+      parameters:
+        - name: sensorId
+          in: path
+          schema:
+            type: string
+          required: true
+          example: '3102'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /getmeasures/A81758FFFE0BA79B:
+    get:
+      tags:
+        - RetePaIoT
+      summary: Richesta id misure con auth Copy
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/v2/value/apartment/{apartmentId}/timeinterval/{startDate}/{endDate}:
+    get:
+      tags:
+        - Isabella
+        - Performance testing > VALUES
+      summary: get by apt and time
+      parameters:
+        - name: apartmentId
+          in: path
+          schema:
+            type: string
+            example: '65f45e18bac61c63cf41c21f'
+          required: true
+        - name: startDate
+          in: path
+          schema:
+            type: string
+            example: '2024-06-19'
+          required: true
+        - name: endDate
+          in: path
+          schema:
+            type: string
+            example: '2024-07-11'
+          required: true           
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Apartment'
+  /api/v2/value/apartment/{apartmentId}/timeinterval/{startDate}/{endDate}/measure/{measureId}:
+    get:
+      tags:
+        - Isabella
+        - Performance testing > VALUES
+      summary: get by apt and time and measure
+      parameters:
+        - name: apartmentId
+          in: path
+          schema:
+            type: string
+            example: '65f45e18bac61c63cf41c21f'
+          required: true
+        - name: startDate
+          in: path
+          schema:
+            type: string
+            example: '2024-06-19'
+          required: true
+        - name: endDate
+          in: path
+          schema:
+            type: string
+            example: '2024-07-11'
+          required: true   
+        - name: measureId
+          in: path
+          schema:
+            type: string
+            example: '4029'
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: 
+              schema:
+                $ref: '#/components/schemas/Apartment'
+  /api/v2/value/apartment/today/summary:
+    get:
+      tags:
+        - Isabella
+        - Performance testing
+      summary: get today data for all the apartments
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: 
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Apartment'
+  /api/v2/value/apartment/today/summary/apt/{apartmentId}:
+    get:
+      tags:
+        - Isabella
+        - Performance testing
+      summary: Get today data by apartment id
+      parameters:
+        - name: apartmentId
+          in: path
+          schema:
+            type: string
+            example: '65f45e18bac61c63cf41c21f'
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: 
+              schema:
+                $ref: '#/components/schemas/Apartment'
+  /api/v2/value/apartment/{apartmentId}/timeinterval/{startDate}/{endDate}/graphs/{measurementType}:
+    get:
+      tags:
+        - Isabella 
+        - Performance testing
+      summary: Get data for creating graphs
+      parameters:
+        - name: apartmentId
+          in: path
+          schema:
+            type: string
+            example: '65f45e18bac61c63cf41c21f'
+          required: true
+        - name: startDate
+          in: path
+          schema:
+            type: string
+            example: '2024-06-19'
+          required: true
+        - name: endDate
+          in: path
+          schema:
+            type: string
+            example: '2024-07-11'
+          required: true   
+        - name: measurementType
+          in: path
+          schema:
+            type: string
+            example: 'temperature'
+          required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: 
+              schema:
+                $ref: '#/components/schemas/Apartment'
+  /api/v2/value/apartment/{apartmentId}/timeinterval/{startDate}/{endDate}/{measureType}:
+    get:
+      tags:
+        - Isabella
+        - Performance testing
+      summary: Get apartment values for a certain measurement in a certain time interval
+      parameters:
+        - name: apartmentId
+          in: path
+          schema:
+            type: string
+          required: true
+          example: '669e287426264f49b3e20b05'
+        - name: startDate
+          in: path
+          schema:
+            type: string
+          required: true
+          example: '2024-07-01'
+        - name: endDate
+          in: path
+          schema:
+            type: string
+          required: true
+          example: '2024-07-31'
+        - name: measureType
+          in: path
+          schema: 
+            type: string
+          required: true
+          example: 'presence'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: 
+              schema:
+                $ref: '#/components/schemas/GraphValue'
